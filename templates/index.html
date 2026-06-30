@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Customer Churn Prediction</title>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- Chart.js for Visualizations -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="background-animation"></div>
+    
+    <!-- Toast Notifications Container -->
+    <div id="toastContainer" class="toast-container"></div>
+    
+    <div class="container">
+        <header>
+            <h1>Customer Churn Prediction</h1>
+            <p>Enter customer details to evaluate retention probability.</p>
+        </header>
+
+        <main>
+            <!-- Wizard Progress Indicator -->
+            <div class="wizard-progress">
+                <div class="progress-step active" data-step="1">1. Demographics</div>
+                <div class="progress-step" data-step="2">2. Account</div>
+                <div class="progress-step" data-step="3">3. Services</div>
+            </div>
+
+            <form id="predictForm">
+                <!-- STEP 1: Demographics -->
+                <div class="wizard-step active" id="step1">
+                    <div class="section-card compact-card">
+                        <h2>Demographics</h2>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label>Senior Citizen</label>
+                                <select name="SeniorCitizen">
+                                    <option value="0">No</option>
+                                    <option value="1">Yes</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Partner</label>
+                                <select name="Partner">
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Dependents</label>
+                                <select name="Dependents">
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="wizard-actions">
+                        <button type="button" class="next-btn">Next Step</button>
+                    </div>
+                </div>
+
+                <!-- STEP 2: Account Information -->
+                <div class="wizard-step hidden" id="step2">
+                    <div class="section-card compact-card">
+                        <h2>Account Information</h2>
+                        
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="tenure">Tenure (Months) <span class="tooltip" title="How many months the customer has been with the company. First year is highest risk.">?</span></label>
+                                <input type="number" id="tenure" name="tenure" min="0" max="150" step="1" value="12" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="MonthlyCharges">Monthly Charges ($)</label>
+                                <input type="number" id="MonthlyCharges" name="MonthlyCharges" min="0" max="500" step="0.01" value="50.00" required>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="Contract">Contract Type <span class="tooltip" title="Month-to-month contracts have a historically higher churn rate.">?</span></label>
+                                <select id="Contract" name="Contract" required>
+                                    <option value="Month-to-month">Month-to-month</option>
+                                    <option value="One year">One year</option>
+                                    <option value="Two year">Two year</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Paperless Billing</label>
+                                <select name="PaperlessBilling">
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Payment Method</label>
+                                <select name="PaymentMethod">
+                                    <option value="Electronic check">Electronic check</option>
+                                    <option value="Mailed check">Mailed check</option>
+                                    <option value="Bank transfer (automatic)">Bank transfer (automatic)</option>
+                                    <option value="Credit card (automatic)">Credit card (automatic)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="wizard-actions">
+                        <button type="button" class="prev-btn secondary-btn">Previous</button>
+                        <button type="button" class="next-btn">Next Step</button>
+                    </div>
+                </div>
+
+                <!-- STEP 3: Services Enrolled -->
+                <div class="wizard-step hidden" id="step3">
+                    <div class="section-card compact-card">
+                        <h2>Services Enrolled</h2>
+
+                        <div class="form-grid">
+                            <div class="form-group">
+                                <label for="internetService">Internet Service <span class="tooltip" title="Fiber Optic users tend to have higher churn due to premium costs and expectations.">?</span></label>
+                                <select id="internetService" name="InternetService" required>
+                                    <option value="Fiber optic">Fiber optic</option>
+                                    <option value="DSL">DSL</option>
+                                    <option value="No">No Internet</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Phone Service</label>
+                                <select name="PhoneService">
+                                    <option value="Yes">Yes</option>
+                                    <option value="No">No</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Multiple Lines</label>
+                                <select name="MultipleLines">
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="internet-dependent form-grid border-top-light pt-2 mt-2">
+                            <div class="form-group">
+                                <label>Online Security</label>
+                                <select name="OnlineSecurity">
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label>Online Backup</label>
+                                <select name="OnlineBackup">
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Device Protection</label>
+                                <select name="DeviceProtection">
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Tech Support</label>
+                                <select name="TechSupport">
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Streaming TV</label>
+                                <select name="StreamingTV">
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group">
+                                <label>Streaming Movies</label>
+                                <select name="StreamingMovies">
+                                    <option value="No">No</option>
+                                    <option value="Yes">Yes</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="wizard-actions">
+                        <button type="button" class="prev-btn secondary-btn">Previous</button>
+                        <button type="submit" id="submitBtn" class="predict-btn">
+                            <span class="btn-text">Predict Churn Risk</span>
+                            <div class="loader hidden"></div>
+                        </button>
+                    </div>
+                </div>
+            </form>
+
+            <!-- Results Section -->
+            <div id="resultWrapper">
+                <div id="resultCard" class="result-card hidden">
+                    <div class="result-header" style="justify-content: center;">
+                        <h2>Prediction Report</h2>
+                    </div>
+                    
+                    <div class="result-content-centered">
+                        <div class="gauge-container">
+                            <svg viewBox="0 0 100 50" class="gauge">
+                                <path class="gauge-bg" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" />
+                                <path class="gauge-value" id="gaugeValue" d="M 10 50 A 40 40 0 0 1 90 50" fill="none" stroke-dasharray="125" stroke-dashoffset="125" />
+                            </svg>
+                            <div class="gauge-text">
+                                <span id="probValue">0</span>%
+                                <small>Risk Score</small>
+                            </div>
+                        </div>
+                        
+                        <div class="prediction-text" id="predictionText">
+                            Will Stay
+                        </div>
+                    </div>
+
+                    <!-- AI Insights Section -->
+                    <div id="insightsContainer" class="insights-container hidden">
+                        <div class="risk-factors">
+                            <h4>Top Risk Factors</h4>
+                            <ul id="riskFactorsList"></ul>
+                        </div>
+                        <div class="recommendation">
+                            <h4>Actionable Recommendation</h4>
+                            <p id="recommendationText"></p>
+                        </div>
+                    </div>
+                    
+                    <!-- Reset Button to start over -->
+                    <div class="reset-action mt-3 text-center">
+                        <button id="startOverBtn" class="secondary-btn">Start New Prediction</button>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
